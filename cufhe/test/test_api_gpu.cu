@@ -68,6 +68,8 @@ int main() {
   PubKey pub_key; // public key
 
   // Key generation, encryption/decryption tests, and other setup code remain the same
+  cout<< "------ Key Generation ------" <<endl;
+  KeyGen(pub_key, pri_key);
 
   // Test NAND gate (and other gates) on multiple GPUs
   std::cout << "------ Test NAND Gate ------" << std::endl;
