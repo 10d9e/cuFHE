@@ -27,6 +27,8 @@ using namespace cufhe;
 #include <iostream>
 using namespace std;
 
+#include <vector>
+
 void NandCheck(Ptxt& out, const Ptxt& in0, const Ptxt& in1) {
   out.message_ = 1 - in0.message_ * in1.message_;
 }
