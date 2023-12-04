@@ -66,9 +66,6 @@ int main() {
 
   PriKey pri_key; // private key
   PubKey pub_key; // public key
-  Ptxt* pt = new Ptxt[2 * kNumTests];
-  Ctxt* ct = new Ctxt[2 * kNumTests];
-  Synchronize();
   bool correct;
 
   cout<< "------ Key Generation ------" <<endl;
