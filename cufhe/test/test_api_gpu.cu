@@ -51,8 +51,7 @@ int main() {
 
   PriKey pri_key; // private key
   PubKey pub_key; // public key
-  Ptxt* pt = new Ptxt[2 * kNumTests];
-  Ctxt* ct = new Ctxt[2 * kNumTests];
+  
   Synchronize();
   bool correct;
 
@@ -70,6 +69,9 @@ for (int i = 0; i < deviceCount; i++) {
   uint32_t kNumSMs = prop.multiProcessorCount;
   uint32_t kNumTests = kNumSMs * 32;// * 8;
   uint32_t kNumLevels = 4;
+
+  Ptxt* pt = new Ptxt[2 * kNumTests];
+  Ctxt* ct = new Ctxt[2 * kNumTests];
 
   Initialize(pub_key); // essential for GPU computing
 
