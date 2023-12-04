@@ -66,8 +66,11 @@ int main() {
 
   PriKey pri_key; // private key
   PubKey pub_key; // public key
+  Ptxt* pt = new Ptxt[2 * kNumTests];
+  Ctxt* ct = new Ctxt[2 * kNumTests];
+  Synchronize();
+  bool correct;
 
-  // Key generation, encryption/decryption tests, and other setup code remain the same
   cout<< "------ Key Generation ------" <<endl;
   KeyGen(pub_key, pri_key);
   // Alternatively ...
