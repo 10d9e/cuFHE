@@ -66,7 +66,7 @@ int main() {
 
   PriKey pri_key; // private key
   PubKey pub_key; // public key
-  bool correct;
+  bool correct = true;
 
   cout<< "------ Key Generation ------" <<endl;
   KeyGen(pub_key, pri_key);
