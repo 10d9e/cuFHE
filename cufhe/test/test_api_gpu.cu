@@ -63,10 +63,10 @@ int main() {
   // PubKeyGen(pub_key, pri_key);
 
   cout<< "------ Initilizating Data on GPU(s) ------" <<endl;
-for (int i = 0; i < deviceCount; i++) {
-  cudaSetDevice(i);
+for (int j = 0; j < deviceCount; j++) {
+  cudaSetDevice(j);
   cudaDeviceProp prop;
-  cudaGetDeviceProperties(&prop, i);
+  cudaGetDeviceProperties(&prop, j);
   uint32_t kNumSMs = prop.multiProcessorCount;
   uint32_t kNumTests = kNumSMs * 32;// * 8;
   uint32_t kNumLevels = 4;
