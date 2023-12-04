@@ -70,6 +70,26 @@ int main() {
   // Key generation, encryption/decryption tests, and other setup code remain the same
   cout<< "------ Key Generation ------" <<endl;
   KeyGen(pub_key, pri_key);
+  // Alternatively ...
+  // PriKeyGen(pri_key);
+  // PubKeyGen(pub_key, pri_key);
+
+  cout<< "------ Test Encryption/Decryption ------" <<endl;
+  cout<< "Number of tests:\t" << kNumTests <<endl;
+  correct = true;
+  for (int i = 0; i < kNumTests; i ++) {
+    pt[i].message_ = rand() % Ptxt::kPtxtSpace;
+    Encrypt(ct[i], pt[i], pri_key);
+    Decrypt(pt[kNumTests + i], ct[i], pri_key);
+    if (pt[kNumTests + i].message_ != pt[i].message_) {
+      correct = false;
+      break;
+    }
+  }
+  if (correct)
+    cout<< "PASS" <<endl;
+  else
+    cout<< "FAIL" <<endl;
 
   // Test NAND gate (and other gates) on multiple GPUs
   std::cout << "------ Test NAND Gate ------" << std::endl;
