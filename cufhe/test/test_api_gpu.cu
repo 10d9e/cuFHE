@@ -117,7 +117,7 @@ for (int i = 0; i < deviceCount; i++) {
   cout<< et / kNumTests / kNumLevels << " ms / gate" <<endl;
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
-}
+
   int cnt_failures = 0;
   for (int i = 0; i < kNumTests; i ++) {
     NandCheck(pt[i], pt[i], pt[i + kNumTests]);
@@ -138,7 +138,7 @@ for (int i = 0; i < deviceCount; i++) {
   for (int i = 0; i < kNumSMs; i ++)
     st[i].Destroy();
   delete [] st;
-
+}
   cout<< "------ Cleaning Data on GPU(s) ------" <<endl;
   CleanUp(); // essential to clean and deallocate data
   delete [] ct;
