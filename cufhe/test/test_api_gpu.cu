@@ -97,7 +97,6 @@ int main() {
   // Test NAND gate (and other gates) on multiple GPUs
   std::cout << "------ Test NAND Gate ------" << std::endl;
   std::cout << "Number of tests per GPU:\t" << kNumTestsPerGPU << std::endl;
-  bool correct = true;
 
   for (int i = 0; i < num_gpus; i++) {
     cudaSetDevice(devices[i]);
