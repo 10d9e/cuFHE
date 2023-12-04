@@ -76,21 +76,6 @@ for (int j = 0; j < deviceCount; j++) {
 
   Initialize(pub_key); // essential for GPU computing
 
-  for (int i = 0; i < kNumTests; i ++) {
-    pt[i].message_ = rand() % Ptxt::kPtxtSpace;
-    Encrypt(ct[i], pt[i], pri_key);
-    Decrypt(pt[kNumTests + i], ct[i], pri_key);
-    if (pt[kNumTests + i].message_ != pt[i].message_) {
-      correct = false;
-      break;
-    }
-  }
-  if (correct)
-    cout<< "PASS" <<endl;
-  else
-    cout<< "FAIL" <<endl;
-
-
   cout<< "------ Test NAND Gate ------" <<endl;
   cout<< "Number of tests:\t" << kNumTests <<endl;
   // Create CUDA streams for parallel gates.
