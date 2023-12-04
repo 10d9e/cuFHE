@@ -70,6 +70,14 @@ int main() {
   // PubKeyGen(pub_key, pri_key);
 
   cout<< "------ Initilizating Data on GPU(s) ------" <<endl;
+for (int i = 0; i < deviceCount; i++) {
+  cudaSetDevice(i);
+  cudaDeviceProp prop;
+  cudaGetDeviceProperties(&prop, i);
+  uint32_t kNumSMs = prop.multiProcessorCount;
+  uint32_t kNumTests = kNumSMs * 32;// * 8;
+  uint32_t kNumLevels = 4;
+
   Initialize(pub_key); // essential for GPU computing
 
   cout<< "------ Test NAND Gate ------" <<endl;
@@ -109,7 +117,7 @@ int main() {
   cout<< et / kNumTests / kNumLevels << " ms / gate" <<endl;
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
-
+}
   int cnt_failures = 0;
   for (int i = 0; i < kNumTests; i ++) {
     NandCheck(pt[i], pt[i], pt[i + kNumTests]);
