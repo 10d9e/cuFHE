@@ -133,10 +133,11 @@ for (int i = 0; i < deviceCount; i++) {
   for (int i = 0; i < kNumSMs; i ++)
     st[i].Destroy();
   delete [] st;
-}
+
   cout<< "------ Cleaning Data on GPU(s) ------" <<endl;
   CleanUp(); // essential to clean and deallocate data
   delete [] ct;
   delete [] pt;
   return 0;
+}
 }
