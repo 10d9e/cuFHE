@@ -46,6 +46,7 @@ void XorCheck(Ptxt& out, const Ptxt& in0, const Ptxt& in1) {
 int main() {
   int deviceCount;
   cudaGetDeviceCount(&deviceCount);
+  std::cout<< "Device count: " << deviceCount << std::endl;
 
   SetSeed(); // set random seed
 
