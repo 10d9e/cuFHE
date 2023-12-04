@@ -78,26 +78,46 @@ int main() {
 
     for (int j = 0; j < kNumTestsPerGPU; j++) {
       // Create and encrypt data here
-    }
-    Synchronize();
-  }
+      Ptxt* pt = new Ptxt[2 * kNumTestsPerGPU];
+      Ctxt* ct = new Ctxt[2 * kNumTestsPerGPU];
+      for (int k = 0; k < 2 * kNumTestsPerGPU; k++) {
+        pt[k].message_ = rand() % Ptxt::kPtxtSpace;
+        Encrypt(ct[k], pt[k], pri_key);
+      }
+      Synchronize();
+      
+      // Perform gate operations on multiple GPUs here
+      for (int k = 0; k < kNumTestsPerGPU; k++) {
+        Nand(ct[k], ct[k], ct[k + kNumTestsPerGPU], streams[i][j]);
+        Or(ct[k], ct[k], ct[k + kNumTestsPerGPU], streams[i][j]);
+        And(ct[k], ct[k], ct[k + kNumTestsPerGPU], streams[i][j]);
+        Xor(ct[k], ct[k], ct[k + kNumTestsPerGPU], streams[i][j]);
+      }
 
-  // Perform gate operations on multiple GPUs here
-
-  // Synchronize all GPUs
-  for (int i = 0; i < num_gpus; i++) {
-    cudaSetDevice(devices[i]);
-    Synchronize();
-  }
-
-  // Clean up and check results on all GPUs
-  for (int i = 0; i < num_gpus; i++) {
-    cudaSetDevice(devices[i]);
-
-    int cnt_failures = 0;
-    for (int j = 0; j < kNumTestsPerGPU; j++) {
+      Synchronize();
+      
       // Decrypt and check results here
+      int cnt_failures = 0;
+      for (int k = 0; k < kNumTestsPerGPU; k++) {
+        NandCheck(pt[k], pt[k], pt[k + kNumTestsPerGPU]);
+        OrCheck(pt[k], pt[k], pt[k + kNumTestsPerGPU]);
+        AndCheck(pt[k], pt[k], pt[k + kNumTestsPerGPU]);
+        XorCheck(pt[k], pt[k], pt[k + kNumTestsPerGPU]);
+        Decrypt(pt[k + kNumTestsPerGPU], ct[k], pri_key);
+        if (pt[k + kNumTestsPerGPU].message_ != pt[k].message_) {
+          correct = false;
+          cnt_failures += 1;
+        }
+      }
+      if (!correct) {
+        std::cout << "GPU " << i << " Test " << j << " FAIL:\t" << cnt_failures << "/" << kNumTestsPerGPU << std::endl;
+      }
+      
+      // Clean up resources for this GPU
+      delete[] ct;
+      delete[] pt;
     }
+    
     CleanUp(); // essential to clean and deallocate data
   }
 
@@ -110,114 +130,5 @@ int main() {
     delete[] streams[i];
   }
 
-  return 0;
-}
-
-int main2() {
-  cudaSetDevice(0);
-  cudaDeviceProp prop;
-  cudaGetDeviceProperties(&prop, 0);
-  uint32_t kNumSMs = prop.multiProcessorCount;
-  uint32_t kNumTests = kNumSMs * 32;// * 8;
-  uint32_t kNumLevels = 4;
-
-  SetSeed(); // set random seed
-
-  PriKey pri_key; // private key
-  PubKey pub_key; // public key
-  Ptxt* pt = new Ptxt[2 * kNumTests];
-  Ctxt* ct = new Ctxt[2 * kNumTests];
-  Synchronize();
-  bool correct;
-
-  cout<< "------ Key Generation ------" <<endl;
-  KeyGen(pub_key, pri_key);
-  // Alternatively ...
-  // PriKeyGen(pri_key);
-  // PubKeyGen(pub_key, pri_key);
-
-  cout<< "------ Test Encryption/Decryption ------" <<endl;
-  cout<< "Number of tests:\t" << kNumTests <<endl;
-  correct = true;
-  for (int i = 0; i < kNumTests; i ++) {
-    pt[i].message_ = rand() % Ptxt::kPtxtSpace;
-    Encrypt(ct[i], pt[i], pri_key);
-    Decrypt(pt[kNumTests + i], ct[i], pri_key);
-    if (pt[kNumTests + i].message_ != pt[i].message_) {
-      correct = false;
-      break;
-    }
-  }
-  if (correct)
-    cout<< "PASS" <<endl;
-  else
-    cout<< "FAIL" <<endl;
-
-  cout<< "------ Initilizating Data on GPU(s) ------" <<endl;
-  Initialize(pub_key); // essential for GPU computing
-
-  cout<< "------ Test NAND Gate ------" <<endl;
-  cout<< "Number of tests:\t" << kNumTests <<endl;
-  // Create CUDA streams for parallel gates.
-  Stream* st = new Stream[kNumSMs];
-  for (int i = 0; i < kNumSMs; i ++)
-    st[i].Create();
-
-  correct = true;
-  for (int i = 0; i < 2 * kNumTests; i ++) {
-    pt[i] = rand() % Ptxt::kPtxtSpace;
-    Encrypt(ct[i], pt[i], pri_key);
-  }
-  Synchronize();
-
-  float et;
-  cudaEvent_t start, stop;
-  cudaEventCreate(&start);
-  cudaEventCreate(&stop);
-  cudaEventRecord(start, 0);
-
-  // Here, pass streams to gates for parallel gates.
-  for (int i = 0; i < kNumTests; i ++)
-    Nand(ct[i], ct[i], ct[i + kNumTests], st[i % kNumSMs]);
-  for (int i = 0; i < kNumTests; i ++)
-    Or(ct[i], ct[i], ct[i + kNumTests], st[i % kNumSMs]);
-  for (int i = 0; i < kNumTests; i ++)
-    And(ct[i], ct[i], ct[i + kNumTests], st[i % kNumSMs]);
-  for (int i = 0; i < kNumTests; i ++)
-    Xor(ct[i], ct[i], ct[i + kNumTests], st[i % kNumSMs]);
-  Synchronize();
-
-  cudaEventRecord(stop, 0);
-  cudaEventSynchronize(stop);
-  cudaEventElapsedTime(&et, start, stop);
-  cout<< et / kNumTests / kNumLevels << " ms / gate" <<endl;
-  cudaEventDestroy(start);
-  cudaEventDestroy(stop);
-
-  int cnt_failures = 0;
-  for (int i = 0; i < kNumTests; i ++) {
-    NandCheck(pt[i], pt[i], pt[i + kNumTests]);
-    OrCheck(pt[i], pt[i], pt[i + kNumTests]);
-    AndCheck(pt[i], pt[i], pt[i + kNumTests]);
-    XorCheck(pt[i], pt[i], pt[i + kNumTests]);
-    Decrypt(pt[i + kNumTests], ct[i], pri_key);
-    if (pt[i + kNumTests].message_ != pt[i].message_) {
-      correct = false;
-      cnt_failures += 1;
-      //std::cout<< "Fail at iteration: " << i <<std::endl;
-    }
-  }
-  if (correct)
-    cout<< "PASS" <<endl;
-  else
-    cout<< "FAIL:\t" << cnt_failures << "/" << kNumTests <<endl;
-  for (int i = 0; i < kNumSMs; i ++)
-    st[i].Destroy();
-  delete [] st;
-
-  cout<< "------ Cleaning Data on GPU(s) ------" <<endl;
-  CleanUp(); // essential to clean and deallocate data
-  delete [] ct;
-  delete [] pt;
   return 0;
 }
