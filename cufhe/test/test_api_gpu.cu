@@ -44,6 +44,76 @@ void XorCheck(Ptxt& out, const Ptxt& in0, const Ptxt& in1) {
 }
 
 int main() {
+  const int num_gpus = 2; // Set the number of GPUs you want to use
+  const uint32_t kNumTestsPerGPU = 16; // Number of tests per GPU
+  const uint32_t kNumLevels = 4;
+
+  // Create a vector to hold devices and streams for each GPU
+  std::vector<int> devices(num_gpus);
+  std::vector<Stream*> streams(num_gpus);
+
+  for (int i = 0; i < num_gpus; i++) {
+    devices[i] = i;
+    streams[i] = new Stream[num_gpus];
+    for (int j = 0; j < num_gpus; j++) {
+      streams[i][j].Create();
+    }
+  }
+
+  SetSeed(); // set random seed
+
+  PriKey pri_key; // private key
+  PubKey pub_key; // public key
+
+  // Key generation, encryption/decryption tests, and other setup code remain the same
+
+  // Test NAND gate (and other gates) on multiple GPUs
+  std::cout << "------ Test NAND Gate ------" << std::endl;
+  std::cout << "Number of tests per GPU:\t" << kNumTestsPerGPU << std::endl;
+  bool correct = true;
+
+  for (int i = 0; i < num_gpus; i++) {
+    cudaSetDevice(devices[i]);
+    Initialize(pub_key); // essential for GPU computing
+
+    for (int j = 0; j < kNumTestsPerGPU; j++) {
+      // Create and encrypt data here
+    }
+    Synchronize();
+  }
+
+  // Perform gate operations on multiple GPUs here
+
+  // Synchronize all GPUs
+  for (int i = 0; i < num_gpus; i++) {
+    cudaSetDevice(devices[i]);
+    Synchronize();
+  }
+
+  // Clean up and check results on all GPUs
+  for (int i = 0; i < num_gpus; i++) {
+    cudaSetDevice(devices[i]);
+
+    int cnt_failures = 0;
+    for (int j = 0; j < kNumTestsPerGPU; j++) {
+      // Decrypt and check results here
+    }
+    CleanUp(); // essential to clean and deallocate data
+  }
+
+  // Clean up streams and devices
+  for (int i = 0; i < num_gpus; i++) {
+    cudaSetDevice(devices[i]);
+    for (int j = 0; j < num_gpus; j++) {
+      streams[i][j].Destroy();
+    }
+    delete[] streams[i];
+  }
+
+  return 0;
+}
+
+int main2() {
   cudaSetDevice(0);
   cudaDeviceProp prop;
   cudaGetDeviceProperties(&prop, 0);
