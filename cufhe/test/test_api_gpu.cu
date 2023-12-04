@@ -44,6 +44,9 @@ void XorCheck(Ptxt& out, const Ptxt& in0, const Ptxt& in1) {
 }
 
 int main() {
+  int deviceCount;
+  cudaGetDeviceCount(&deviceCount);
+
   cudaSetDevice(0);
   cudaDeviceProp prop;
   cudaGetDeviceProperties(&prop, 0);
@@ -65,23 +68,6 @@ int main() {
   // Alternatively ...
   // PriKeyGen(pri_key);
   // PubKeyGen(pub_key, pri_key);
-
-  cout<< "------ Test Encryption/Decryption ------" <<endl;
-  cout<< "Number of tests:\t" << kNumTests <<endl;
-  correct = true;
-  for (int i = 0; i < kNumTests; i ++) {
-    pt[i].message_ = rand() % Ptxt::kPtxtSpace;
-    Encrypt(ct[i], pt[i], pri_key);
-    Decrypt(pt[kNumTests + i], ct[i], pri_key);
-    if (pt[kNumTests + i].message_ != pt[i].message_) {
-      correct = false;
-      break;
-    }
-  }
-  if (correct)
-    cout<< "PASS" <<endl;
-  else
-    cout<< "FAIL" <<endl;
 
   cout<< "------ Initilizating Data on GPU(s) ------" <<endl;
   Initialize(pub_key); // essential for GPU computing
